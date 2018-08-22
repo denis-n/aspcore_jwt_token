@@ -53,7 +53,7 @@ namespace TokenB.Controllers
             {
                 UserId = userId,
                 Name = name,
-                FullName = "Vlad Logvinov",
+                FullName = "Stereo Vlad",
                 Token = identity.GetJwtToken()
             });
         }
