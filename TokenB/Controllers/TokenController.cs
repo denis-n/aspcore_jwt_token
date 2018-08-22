@@ -14,7 +14,7 @@ namespace TokenB.Controllers
         public string Token { get; internal set; }
     }
 
-    //[Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class TokenController : ControllerBase
     {
@@ -26,6 +26,7 @@ namespace TokenB.Controllers
         }
 
         
+        [AllowAnonymous]
         [HttpPost("token")]
         public IActionResult Create(string username, string password)
         {

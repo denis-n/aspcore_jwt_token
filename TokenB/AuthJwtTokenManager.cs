@@ -92,7 +92,7 @@ namespace System.Security.Claims
     {
         public static string GetUserId(this ClaimsPrincipal user)
         {
-            return user.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(x => x.Value).FirstOrDefault();
+            return user.FindFirstValue(ClaimTypes.NameIdentifier);
         }
     }
 }
