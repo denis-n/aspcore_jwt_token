@@ -1,9 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using TokenB;
+using TokenB.ClaimRequirements;
 
 namespace TokenB
 {
@@ -13,7 +19,9 @@ namespace TokenB
 
         public const string Issuer = "https://awesome-website.com";
 
-        public const string Audience = "subdomain-name";
+        public const string Audience = "audience";
+
+        public const string SubdomainKey = "Subdomain";
 
         private const string Key = "supersecret_secretkey!12345";
 
@@ -21,8 +29,59 @@ namespace TokenB
         {
             return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key));
         }
+
+        public const string ValidSubdomainPolicy = "CorrectSubdomainOnly";
     }
 }
+
+namespace TokenB.ClaimRequirements
+{
+    public class ValidSubdomainRequirement : IAuthorizationRequirement
+    {
+        public string ClaimSubdomainKey { get; private set; }
+
+        public ValidSubdomainRequirement(string subdomainKey)
+        {
+            this.ClaimSubdomainKey = subdomainKey;
+        }
+    }
+
+    public class ValidSubdomainHandler
+        : AuthorizationHandler<ValidSubdomainRequirement>
+    {
+        protected override Task HandleRequirementAsync(
+            AuthorizationHandlerContext context,
+            ValidSubdomainRequirement requirement)
+        {
+            if (context.Resource is AuthorizationFilterContext filterContext)
+            {
+                var httpContext = filterContext.HttpContext;
+
+                var env = httpContext.RequestServices.GetService<IHostingEnvironment>();
+                if (env.IsDevelopment())
+                {
+                    context.Succeed(requirement);
+                }
+                else
+                {
+                    string subdomainFromToken = context.User.FindFirstValue(requirement.ClaimSubdomainKey);
+                    var host = httpContext.Request.Host;
+
+                    // todo: check if host includes/starts with subdomain
+
+                    if (subdomainFromToken == "subdomain1")
+                    {
+                        context.Succeed(requirement);
+                    }
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+}
+
+
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -59,6 +118,15 @@ namespace Microsoft.Extensions.DependencyInjection
                         ValidateIssuerSigningKey = true
                     };
                 });
+
+            services.AddSingleton<IAuthorizationHandler, ValidSubdomainHandler>();
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(AuthJwtTokenManager.ValidSubdomainPolicy, 
+                    policy => policy.RequireClaim(AuthJwtTokenManager.SubdomainKey)
+                                    .AddRequirements(new ValidSubdomainRequirement(AuthJwtTokenManager.SubdomainKey)));
+            });
         }
     }
 }

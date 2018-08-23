@@ -11,10 +11,11 @@ namespace TokenB.Controllers
         public string UserId { get; internal set; }
         public string Name { get; internal set; }
         public string FullName { get; internal set; }
+        public string Subdomain { get; internal set; }
         public string Token { get; internal set; }
     }
 
-    [Authorize]
+    [Authorize(Policy = AuthJwtTokenManager.ValidSubdomainPolicy)]
     [ApiController]
     public class TokenController : ControllerBase
     {
@@ -47,14 +48,19 @@ namespace TokenB.Controllers
             string userId = "A123";
             string name = "Vlad L.";
             string[] roles = { "role1", "role2" };
+            string subdomain = "subdomain1";
 
-            var identity = GetClaimsIdentity(userId, name, roles);
-            
+            var random = new System.Random();
+            subdomain = subdomain + (random.Next(100) <= 20 ? "" : "-abc");
+
+            var identity = GetClaimsIdentity(userId, name, roles, subdomain);            
+
             return Ok(new AuthenticatedUserInfoJsonModel
             {
                 UserId = userId,
                 Name = name,
                 FullName = "Stereo Vlad",
+                Subdomain = subdomain,
                 Token = identity.GetJwtToken()
             });
         }
@@ -74,12 +80,13 @@ namespace TokenB.Controllers
             };
         }
 
-        private ClaimsIdentity GetClaimsIdentity(string userId, string name, string[] roles)
+        private ClaimsIdentity GetClaimsIdentity(string userId, string name, string[] roles, string subdomain)
         {
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim(ClaimTypes.Name, name)
+                new Claim(ClaimTypes.Name, name),
+                new Claim(AuthJwtTokenManager.SubdomainKey, subdomain)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims);
