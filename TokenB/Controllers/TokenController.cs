@@ -51,8 +51,10 @@ namespace TokenB.Controllers
             string[] roles = { "role1", "role2" };
             string subdomain = Request.Host.Host.Split('.').FirstOrDefault();
 
-            var random = new System.Random();
-            subdomain = subdomain + (random.Next(100) <= 20 ? "" : "-abc");
+            if (subdomain == Request.Host.Host)
+            {
+                subdomain = "n/a";
+            }
 
             var identity = GetClaimsIdentity(userId, name, roles, subdomain);            
 
