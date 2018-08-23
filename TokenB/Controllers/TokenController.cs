@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 
@@ -87,7 +86,7 @@ namespace TokenB.Controllers
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Jti, userId),
+                new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim(ClaimTypes.Name, name),
                 new Claim(AuthJwtTokenManager.ClaimSubdomainKey, subdomain)
             };
