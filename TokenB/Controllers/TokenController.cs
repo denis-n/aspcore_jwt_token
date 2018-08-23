@@ -49,7 +49,7 @@ namespace TokenB.Controllers
             string userId = "A123";
             string name = "Vlad L.";
             string[] roles = { "role1", "role2" };
-            string subdomain = "subdomain1";
+            string subdomain = Request.Host.Host.Split('.').FirstOrDefault();
 
             var random = new System.Random();
             subdomain = subdomain + (random.Next(100) <= 20 ? "" : "-abc");
