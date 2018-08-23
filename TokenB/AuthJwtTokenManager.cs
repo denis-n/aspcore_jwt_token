@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -46,8 +47,7 @@ namespace TokenB.ClaimRequirements
         }
     }
 
-    public class ValidSubdomainHandler
-        : AuthorizationHandler<ValidSubdomainRequirement>
+    public class ValidSubdomainHandler : AuthorizationHandler<ValidSubdomainRequirement>
     {
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
@@ -64,12 +64,11 @@ namespace TokenB.ClaimRequirements
                 }
                 else
                 {
-                    string subdomainFromToken = context.User.FindFirstValue(requirement.ClaimSubdomainKey);
-                    var host = httpContext.Request.Host;
-
                     // todo: check if host includes/starts with subdomain
 
-                    if (subdomainFromToken == "subdomain1")
+                    string subdomainFromToken = context.User.FindFirstValue(requirement.ClaimSubdomainKey);                    
+
+                    if (httpContext.Request.Host.Host.StartsWith($"{subdomainFromToken}.", StringComparison.CurrentCultureIgnoreCase))
                     {
                         context.Succeed(requirement);
                     }
