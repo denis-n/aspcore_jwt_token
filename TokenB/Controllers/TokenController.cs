@@ -86,7 +86,7 @@ namespace TokenB.Controllers
             {
                 new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim(ClaimTypes.Name, name),
-                new Claim(AuthJwtTokenManager.SubdomainKey, subdomain)
+                new Claim(AuthJwtTokenManager.ClaimSubdomainKey, subdomain)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims);

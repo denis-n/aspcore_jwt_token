@@ -21,14 +21,14 @@ namespace TokenB
 
         public const string Audience = "audience";
 
-        public const string SubdomainKey = "Subdomain";
-
         private const string Key = "supersecret_secretkey!12345";
 
         public static SecurityKey GetSecurityKey()
         {
             return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key));
         }
+
+        public const string ClaimSubdomainKey = "Subdomain";
 
         public const string ValidSubdomainPolicy = "CorrectSubdomainOnly";
     }
@@ -124,8 +124,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddAuthorization(options =>
             {
                 options.AddPolicy(AuthJwtTokenManager.ValidSubdomainPolicy, 
-                    policy => policy.RequireClaim(AuthJwtTokenManager.SubdomainKey)
-                                    .AddRequirements(new ValidSubdomainRequirement(AuthJwtTokenManager.SubdomainKey)));
+                    policy => policy.RequireClaim(AuthJwtTokenManager.ClaimSubdomainKey)
+                                    .AddRequirements(new ValidSubdomainRequirement(AuthJwtTokenManager.ClaimSubdomainKey)));
             });
         }
     }
