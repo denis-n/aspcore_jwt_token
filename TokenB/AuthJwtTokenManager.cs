@@ -29,6 +29,13 @@ namespace TokenB
             return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key));
         }
 
+        public static SigningCredentials GetSigningCredentials()
+        {
+            var key = AuthJwtTokenManager.GetSecurityKey();
+
+            return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        }
+
         public const string ClaimSubdomainKey = "Subdomain";
 
         public const string ValidSubdomainPolicy = "CorrectSubdomainOnly";
@@ -136,9 +143,7 @@ namespace System.Security.Claims
     {
         public static string GetJwtToken(this ClaimsIdentity idenitity)
         {
-            var key = AuthJwtTokenManager.GetSecurityKey();
-
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var credentials = AuthJwtTokenManager.GetSigningCredentials();
 
             var token = new JwtSecurityToken(
                 issuer: AuthJwtTokenManager.Issuer,
